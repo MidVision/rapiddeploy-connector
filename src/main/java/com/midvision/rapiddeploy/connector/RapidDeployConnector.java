@@ -1,7 +1,6 @@
 package com.midvision.rapiddeploy.connector;
 
 import java.io.InputStream;
-import java.security.Key;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -10,7 +9,6 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
@@ -20,33 +18,15 @@ import org.w3c.dom.NodeList;
 
 public class RapidDeployConnector {
 
-    // FIXME: this values are in fact properties in the RapidDeploy framework.
-    public static final String PREFIX_ENC = "{_MV@ENC#_}";
-    public static final String ENCRYPTION_KEY = "lUzX7J0LkoUigR763Fnbuaq7e3TYPGe3";
-
-    private static String encryptValue(final String key, final String value) throws Exception {
-        final byte[] bytes24 = JCEHelper.createHashValue(key.getBytes(), JCEHelper.SHA_256);
-        final Key key3DES = JCEHelper.create3DESKey(bytes24);
-        final byte[] encryptedData = JCEHelper.encrypt(value.getBytes(), JCEHelper.DES_EDE, key3DES);
-        try {
-            return new String(Base64.encodeBase64(encryptedData));
-        } catch (Exception e) {
-            throw new Exception(e);
-        }
-    }
-
-    public static String invokeRapidDeployDeploymentPollOutput(String username, String password, String serverUrl, String projectName,
+    public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName,
             String targetEnvironment, String packageName, boolean logEnabled) throws Exception {
-        return invokeRapidDeployDeploymentPollOutput(username, password, serverUrl, projectName, targetEnvironment, packageName, logEnabled, null, null, null,
+        return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, null, null, null,
                 null, null);
     }
 
-    public static String invokeRapidDeployDeploymentPollOutput(String username, String password, String serverUrl, String projectName,
+    public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName,
             String targetEnvironment, String packageName, boolean logEnabled, String userName, String passwordEncrypted, String keyFilePath,
             String keyPassPhraseEncrypted, String encryptionKey) throws Exception {
-
-        final String encryptPass = PREFIX_ENC + encryptValue(ENCRYPTION_KEY + username, password);
-        final String authenticationToken = new String(Base64.encodeBase64((username + ":" + encryptPass).getBytes("UTF-8")));
 
         boolean success = true;
 
@@ -144,12 +124,9 @@ public class RapidDeployConnector {
         return output;
     }
 
-    public static String invokeRapidDeployBuildPackage(String username, String password, String serverUrl, String projectName, String packageName,
-            String archiveExension, boolean logEnabled) throws Exception {
-        String deploymentUrl = buildPackageBuildUrl(serverUrl, projectName, packageName, archiveExension);
-
-        final String encryptPass = PREFIX_ENC + encryptValue(ENCRYPTION_KEY + username, password);
-        final String authenticationToken = new String(Base64.encodeBase64((username + ":" + encryptPass).getBytes("UTF-8")));
+    public static String invokeRapidDeployBuildPackage(String authenticationToken, String serverUrl, String projectName, String packageName,
+            String archiveExtension, boolean logEnabled) throws Exception {
+        String deploymentUrl = buildPackageBuildUrl(serverUrl, projectName, packageName, archiveExtension);
 
         String output = callRDServerPutReq(deploymentUrl, authenticationToken);
         if (logEnabled)
@@ -239,14 +216,14 @@ public class RapidDeployConnector {
         return url.toString();
     }
 
-    private static String buildPackageBuildUrl(String serverUrl, String projectName, String packageName, String archiveExension) {
+    private static String buildPackageBuildUrl(String serverUrl, String projectName, String packageName, String archiveExtension) {
         StringBuilder url = new StringBuilder("");
         if (!serverUrl.startsWith("http://")) {
             url.append("http://");
         }
         url.append(serverUrl).append("/ws/deployment/");
         url.append(projectName).append("/package/create?packageName=");
-        url.append(packageName == null ? "" : packageName).append("&archiveExension=").append(archiveExension == null ? "jar" : archiveExension);
+        url.append(packageName == null ? "" : packageName).append("&archiveExtension=").append(archiveExtension == null ? "jar" : archiveExtension);
 
         return url.toString();
     }
