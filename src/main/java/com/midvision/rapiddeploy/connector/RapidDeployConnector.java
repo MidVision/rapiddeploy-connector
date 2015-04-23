@@ -380,7 +380,7 @@ public class RapidDeployConnector {
         String jobStatus = null;
         List<String> responseData = extractTagValueFromXml(responseOutput, "span");
         for (int i = 0; i < responseData.size(); i++) {
-            if ((((String) responseData.get(i)).equals("Display Details Job Status")) && (responseData.size() >= i + 1)) {
+            if ((((String) responseData.get(i)).contains("Job Status")) && (responseData.size() >= i + 1)) {
                 jobStatus = (String) responseData.get(i + 1);
             }
         }
@@ -394,7 +394,7 @@ public class RapidDeployConnector {
         String jobId = null;
         List<String> responseData = extractTagValueFromXml(responseOutput, "span");
         for (int i = 0; i < responseData.size(); i++) {
-            if ((((String) responseData.get(i)).equals("Deployment Job ID")) && (responseData.size() >= i + 1)) {
+            if ((((String) responseData.get(i)).contains("Job ID")) && (responseData.size() >= i + 1)) {
                 jobId = (String) responseData.get(i + 1);
             }
         }
