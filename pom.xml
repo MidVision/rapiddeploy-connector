@@ -12,6 +12,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<maven-deploy-plugin.version>2.7</maven-deploy-plugin.version>
+		<maven-assembly-plugin.version>2.4</maven-assembly-plugin.version>
 	</properties>
 
 	<dependencies>
@@ -28,7 +30,7 @@
 		<plugins>
 			<plugin>
 				<artifactId>maven-assembly-plugin</artifactId>
-				<version>2.4</version>
+				<version>${maven-assembly-plugin.version}</version>
 				<configuration>
 					<finalName>${project.artifactId}-${project.version}</finalName>
 					<appendAssemblyId>false</appendAssemblyId>
@@ -46,12 +48,20 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>${maven-deploy-plugin.version}</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
 	<scm>
-		<connection>scm:git:ssh://github.com/MidVision/rapiddeploy-connector.git</connection>
-		<developerConnection>scm:git:ssh://git@github.com/MidVision/rapiddeploy-connector.git</developerConnection>
+		<connection>scm:git:https://github.com/MidVision/rapiddeploy-connector.git</connection>
+		<developerConnection>scm:git:https://github.com/MidVision/rapiddeploy-connector.git</developerConnection>
 		<url>https://github.com/MidVision/rapiddeploy-connector</url>
 		<tag>HEAD</tag>
 	</scm>
