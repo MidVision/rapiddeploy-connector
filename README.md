@@ -1,4 +1,4 @@
-# RapidDeploy Connector
+# _RapidDeploy_ connector
 This project provides a _Java API_ to connect and execute certain _RapidDeploy_ features.
 
 To use this library from a _Maven_ project:
@@ -11,7 +11,7 @@ To use this library from a _Maven_ project:
 </dependency>
 ```
 
-Make sure the version you want to use coincide with one of the releases available.
+Make sure the version you want to use coincides with one of the releases available.
 
 And the public repository where it can be found:
 
