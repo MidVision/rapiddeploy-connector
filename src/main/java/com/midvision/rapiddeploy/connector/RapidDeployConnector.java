@@ -21,98 +21,96 @@ public class RapidDeployConnector {
 	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
 			String packageName, boolean logEnabled) throws Exception {
 		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, null, null, null,
-				null, null);
+				null, null, false);
 	}
 
 	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
 			String packageName, boolean logEnabled, String userName, String passwordEncrypted, String keyFilePath, String keyPassPhraseEncrypted,
 			String encryptionKey) throws Exception {
+		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, userName,
+				passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, false);
+	}
+
+	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
+			String packageName, boolean logEnabled, boolean asynchronousJob) throws Exception {
+		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, null, null, null,
+				null, null, asynchronousJob);
+	}
+
+	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
+			String packageName, boolean logEnabled, String userName, String passwordEncrypted, String keyFilePath, String keyPassPhraseEncrypted,
+			String encryptionKey, boolean asynchronousJob) throws Exception {
 
 		boolean success = true;
+		StringBuilder response = new StringBuilder();
 
 		String[] envObjects = targetEnvironment.split("\\.");
 		String output;
 		if ((targetEnvironment.contains(".")) && (envObjects.length == 4)) {
 			output = invokeRapidDeployDeployment(authenticationToken, serverUrl, projectName, envObjects[0], envObjects[1], envObjects[2], envObjects[3],
 					packageName, userName, passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey);
+		} else if ((targetEnvironment.contains(".")) && (envObjects.length == 3)) {
+			output = invokeRapidDeployDeployment(authenticationToken, serverUrl, projectName, envObjects[0], envObjects[1], null, envObjects[2], packageName,
+					userName, passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey);
 		} else {
-			if ((targetEnvironment.contains(".")) && (envObjects.length == 3)) {
-				output = invokeRapidDeployDeployment(authenticationToken, serverUrl, projectName, envObjects[0], envObjects[1], null, envObjects[2],
-						packageName, userName, passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey);
+			throw new Exception("Invalid environment settings found! Environment: " + targetEnvironment);
+		}
+
+		response.append("RapidDeploy job successfully started!");
+		response.append(System.getProperty("line.separator"));
+
+		if (!asynchronousJob) {
+			String jobId = RapidDeployConnector.extractJobId(output);
+			if (jobId != null) {
+				response.append("Checking job status every 30 seconds...");
+				response.append(System.getProperty("line.separator"));
+				boolean runningJob = true;
+				long milisToSleep = 30000L;
+				while (runningJob) {
+					Thread.sleep(milisToSleep);
+					String jobDetails = RapidDeployConnector.pollRapidDeployJobDetails(authenticationToken, serverUrl, jobId);
+					String jobStatus = RapidDeployConnector.extractJobStatus(jobDetails);
+					response.append("Job status: " + jobStatus);
+					response.append(System.getProperty("line.separator"));
+					if ((jobStatus.equals("DEPLOYING")) || (jobStatus.equals("QUEUED")) || (jobStatus.equals("STARTING")) || (jobStatus.equals("EXECUTING"))) {
+						response.append("Job running, next check in 30 seconds...");
+						response.append(System.getProperty("line.separator"));
+						milisToSleep = 30000L;
+					} else if ((jobStatus.equals("REQUESTED")) || (jobStatus.equals("REQUESTED_SCHEDULED"))) {
+						response.append("Job in a REQUESTED state. Approval may be required in RapidDeploy to continue with the execution, next check in 30 seconds...");
+						response.append(System.getProperty("line.separator"));
+					} else if (jobStatus.equals("SCHEDULED")) {
+						response.append("Job in a SCHEDULED state, the execution will start in a future date, next check in 5 minutes...");
+						response.append(System.getProperty("line.separator"));
+						response.append("Printing out job details: ");
+						response.append(System.getProperty("line.separator"));
+						response.append(jobDetails);
+						response.append(System.getProperty("line.separator"));
+						milisToSleep = 300000L;
+					} else {
+						runningJob = false;
+						response.append("Job finished with status: " + jobStatus);
+						response.append(System.getProperty("line.separator"));
+						if ((jobStatus.equals("FAILED")) || (jobStatus.equals("REJECTED")) || (jobStatus.equals("CANCELLED"))
+								|| (jobStatus.equals("UNEXECUTABLE")) || (jobStatus.equals("TIMEDOUT")) || (jobStatus.equals("UNKNOWN"))) {
+							success = false;
+						}
+					}
+				}
 			} else {
-				if (logEnabled) {
-					System.out.println("Exception: Invalid environment settings found! " + targetEnvironment);
-				}
-				throw new Exception("Invalid environment settings found!");
+				throw new RuntimeException("Could not retrieve job id, running asynchronously!");
 			}
-		}
-		if (logEnabled) {
-			System.out.println("RapidDeploy job has successfully started!");
-		}
-
-		String jobId = extractJobId(output);
-		if (jobId != null) {
-			if (logEnabled) {
-				System.out.println("Checking job status in every 30 seconds...");
+			response.append(System.getProperty("line.separator"));
+			String logs = pollRapidDeployJobLog(authenticationToken, serverUrl, jobId);
+			if (!success) {
+				throw new RuntimeException("RapidDeploy job failed. Please check the output." + System.getProperty("line.separator") + logs);
 			}
-			boolean runningJob = true;
-
-			long milisToSleep = 30000L;
-			while (runningJob) {
-				Thread.sleep(milisToSleep);
-				String jobDetails = pollRapidDeployJobDetails(authenticationToken, serverUrl, jobId);
-				String jobStatus = extractJobStatus(jobDetails);
-
-				if (logEnabled) {
-					System.out.println("Job status is " + jobStatus);
-				}
-				if ((jobStatus.equals("DEPLOYING")) || (jobStatus.equals("QUEUED")) || (jobStatus.equals("STARTING")) || (jobStatus.equals("EXECUTING"))) {
-					if (logEnabled) {
-						System.out.println("Job is running, next check in 30 seconds..");
-					}
-					milisToSleep = 30000L;
-				} else if ((jobStatus.equals("REQUESTED")) || (jobStatus.equals("REQUESTED_SCHEDULED"))) {
-					if (logEnabled) {
-						System.out
-								.println("Job is in a REQUESTED state. Approval may be required in RapidDeploy to continue with execution, next check in 30 seconds..");
-					}
-				} else if (jobStatus.equals("SCHEDULED")) {
-					if (logEnabled) {
-						System.out.println("Job is in a SCHEDULED state, execution will start in a future date, next check in 5 minutes..");
-						System.out.println("Printing out job details");
-						System.out.println(jobDetails);
-					}
-					milisToSleep = 300000L;
-				} else {
-					runningJob = false;
-					if (logEnabled) {
-						System.out.println("Job is finished with status " + jobStatus);
-					}
-					if ((jobStatus.equals("FAILED")) || (jobStatus.equals("REJECTED")) || (jobStatus.equals("CANCELLED")) || (jobStatus.equals("UNEXECUTABLE"))
-							|| (jobStatus.equals("TIMEDOUT")) || (jobStatus.equals("UNKNOWN"))) {
-
-						success = false;
-					}
-				}
-			}
-		} else {
-			throw new Exception("Could not retrieve job id, running asynchronously!");
+			response.append("RapidDeploy job successfully run. Please check the output.");
+			response.append(System.getProperty("line.separator"));
+			response.append(logs);
+			response.append(System.getProperty("line.separator"));
 		}
-		if (logEnabled) {
-			System.out.println("");
-		}
-		String logs = pollRapidDeployJobLog(authenticationToken, serverUrl, jobId);
-		if (logEnabled) {
-			System.out.println(logs);
-		}
-		if (!success) {
-			throw new RuntimeException("Failed to run RapidDeploy job. Please check the output.");
-		}
-
-		if (logEnabled) {
-			System.out.println("Successfully ran RapidDeploy job. Please check the output.");
-		}
-		return "Successfully ran RapidDeploy job. Please check the output.";
+		return logEnabled ? response.toString() : output;
 	}
 
 	public static String invokeRapidDeployDeployment(String authenticationToken, String serverUrl, String projectName, String server, String environment,
@@ -127,11 +125,13 @@ public class RapidDeployConnector {
 	public static String invokeRapidDeployBuildPackage(String authenticationToken, String serverUrl, String projectName, String packageName,
 			String archiveExtension, boolean logEnabled) throws Exception {
 		String deploymentUrl = buildPackageBuildUrl(serverUrl, projectName, packageName, archiveExtension);
-
 		String output = callRDServerPutReq(deploymentUrl, authenticationToken);
-		if (logEnabled)
-			System.out.println("Successfully invoked RapidDeploy build package with the following output: " + output);
-		return output;
+		StringBuilder response = new StringBuilder();
+		response.append("Successfully invoked RapidDeploy build package with the following output: ");
+		response.append(System.getProperty("line.separator"));
+		response.append(output);
+		response.append(System.getProperty("line.separator"));
+		return logEnabled ? response.toString() : output;
 	}
 
 	public static String pollRapidDeployJobDetails(String authenticationToken, String serverUrl, String jobId) throws Exception {
