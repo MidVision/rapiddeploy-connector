@@ -3,7 +3,7 @@
 
 	<groupId>com.midvision.plugins</groupId>
 	<artifactId>rapiddeploy-connector</artifactId>
-	<version>1.3-SNAPSHOT</version>
+	<version>1.3</version>
 	<packaging>jar</packaging>
 
 	<name>RapidDeploy API for external plugins.</name>
