@@ -18,12 +18,41 @@ import org.w3c.dom.NodeList;
 
 public class RapidDeployConnector {
 
+	/**
+	 * Runs a Job in RapidDeploy with basic information.
+	 * 
+	 * @param authenticationToken
+	 * @param serverUrl
+	 * @param projectName
+	 * @param targetEnvironment
+	 * @param packageName
+	 * @param logEnabled
+	 * @return
+	 * @throws Exception
+	 */
 	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
 			String packageName, boolean logEnabled) throws Exception {
 		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, null, null, null,
 				null, null, false);
 	}
 
+	/**
+	 * Runs a Job in RapidDeploy with specific transport credentials.
+	 * 
+	 * @param authenticationToken
+	 * @param serverUrl
+	 * @param projectName
+	 * @param targetEnvironment
+	 * @param packageName
+	 * @param logEnabled
+	 * @param userName
+	 * @param passwordEncrypted
+	 * @param keyFilePath
+	 * @param keyPassPhraseEncrypted
+	 * @param encryptionKey
+	 * @return
+	 * @throws Exception
+	 */
 	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
 			String packageName, boolean logEnabled, String userName, String passwordEncrypted, String keyFilePath, String keyPassPhraseEncrypted,
 			String encryptionKey) throws Exception {
@@ -31,15 +60,94 @@ public class RapidDeployConnector {
 				passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, false);
 	}
 
+	/**
+	 * Runs a Job in RapidDeploy providing the option to run it asynchronously.
+	 * 
+	 * @param authenticationToken
+	 * @param serverUrl
+	 * @param projectName
+	 * @param targetEnvironment
+	 * @param packageName
+	 * @param logEnabled
+	 * @param asynchronousJob
+	 * @return
+	 * @throws Exception
+	 */
 	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
 			String packageName, boolean logEnabled, boolean asynchronousJob) throws Exception {
 		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, null, null, null,
 				null, null, asynchronousJob);
 	}
 
+	/**
+	 * Runs a Job in RapidDeploy providing the options to run it asynchronously
+	 * and selecting if running or not previously failed packages.
+	 * 
+	 * @param authenticationToken
+	 * @param serverUrl
+	 * @param projectName
+	 * @param targetEnvironment
+	 * @param packageName
+	 * @param logEnabled
+	 * @param asynchronousJob
+	 * @param allowFailedPkg
+	 * @return
+	 * @throws Exception
+	 */
+	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
+			String packageName, boolean logEnabled, boolean asynchronousJob, boolean allowFailedPkg) throws Exception {
+		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, null, null, null,
+				null, null, asynchronousJob, allowFailedPkg);
+	}
+
+	/**
+	 * Runs a Job in RapidDeploy with specific transport credentials and
+	 * providing the option to run it asynchronously as well.
+	 * 
+	 * @param authenticationToken
+	 * @param serverUrl
+	 * @param projectName
+	 * @param targetEnvironment
+	 * @param packageName
+	 * @param logEnabled
+	 * @param userName
+	 * @param passwordEncrypted
+	 * @param keyFilePath
+	 * @param keyPassPhraseEncrypted
+	 * @param encryptionKey
+	 * @param asynchronousJob
+	 * @return
+	 * @throws Exception
+	 */
 	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
 			String packageName, boolean logEnabled, String userName, String passwordEncrypted, String keyFilePath, String keyPassPhraseEncrypted,
 			String encryptionKey, boolean asynchronousJob) throws Exception {
+		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, userName,
+				passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, asynchronousJob, false);
+	}
+
+	/**
+	 * Runs a Job in RapidDeploy with all possible options (Main method).
+	 * 
+	 * @param authenticationToken
+	 * @param serverUrl
+	 * @param projectName
+	 * @param targetEnvironment
+	 * @param packageName
+	 * @param logEnabled
+	 * @param userName
+	 * @param passwordEncrypted
+	 * @param keyFilePath
+	 * @param keyPassPhraseEncrypted
+	 * @param encryptionKey
+	 * @param asynchronousJob
+	 * @param allowFailedPkg
+	 * @return
+	 * @throws Exception
+	 */
+	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
+			String packageName, boolean logEnabled, String userName, String passwordEncrypted, String keyFilePath, String keyPassPhraseEncrypted,
+			String encryptionKey, boolean asynchronousJob, boolean allowFailedPkg) throws Exception {
 
 		boolean success = true;
 		StringBuilder response = new StringBuilder();
@@ -48,12 +156,12 @@ public class RapidDeployConnector {
 		String output;
 		if ((targetEnvironment.contains(".")) && (envObjects.length == 4)) {
 			output = invokeRapidDeployDeployment(authenticationToken, serverUrl, projectName, envObjects[0], envObjects[1], envObjects[2], envObjects[3],
-					packageName, userName, passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey);
+					packageName, userName, passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, allowFailedPkg);
 		} else if ((targetEnvironment.contains(".")) && (envObjects.length == 3)) {
 			output = invokeRapidDeployDeployment(authenticationToken, serverUrl, projectName, envObjects[0], envObjects[1], null, envObjects[2], packageName,
-					userName, passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey);
+					userName, passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, allowFailedPkg);
 		} else {
-			throw new Exception("Invalid environment settings found! Environment: " + targetEnvironment);
+			throw new RuntimeException("Invalid environment settings found! Environment: " + targetEnvironment);
 		}
 
 		response.append("RapidDeploy job successfully started!");
@@ -113,11 +221,11 @@ public class RapidDeployConnector {
 		return logEnabled ? response.toString() : output;
 	}
 
-	public static String invokeRapidDeployDeployment(String authenticationToken, String serverUrl, String projectName, String server, String environment,
+	private static String invokeRapidDeployDeployment(String authenticationToken, String serverUrl, String projectName, String server, String environment,
 			String instance, String application, String packageName, String userName, String passwordEncrypted, String keyFilePath,
-			String keyPassPhraseEncrypted, String encryptionKey) throws Exception {
+			String keyPassPhraseEncrypted, String encryptionKey, boolean allowFailedPkg) throws Exception {
 		String deploymentUrl = buildDeploymentUrl(serverUrl, projectName, server, environment, instance, application, packageName, userName, passwordEncrypted,
-				keyFilePath, keyPassPhraseEncrypted, encryptionKey);
+				keyFilePath, keyPassPhraseEncrypted, encryptionKey, String.valueOf(allowFailedPkg));
 		String output = callRDServerPutReq(deploymentUrl, authenticationToken);
 		return output;
 	}
@@ -184,7 +292,8 @@ public class RapidDeployConnector {
 	}
 
 	private static String buildDeploymentUrl(String serverUrl, String projectName, String server, String environment, String instance, String application,
-			String packageName, String userName, String passwordEncrypted, String keyFilePath, String keyPassPhraseEncrypted, String encryptionKey) {
+			String packageName, String userName, String passwordEncrypted, String keyFilePath, String keyPassPhraseEncrypted, String encryptionKey,
+			String allowFailedPkg) {
 		StringBuilder url = new StringBuilder("");
 		if (!serverUrl.startsWith("http://")) {
 			url.append("http://");
@@ -197,7 +306,7 @@ public class RapidDeployConnector {
 			url.append(instance).append("/");
 		}
 		url.append(application);
-		url.append("?returnLogFile=true");
+		url.append("?returnLogFile=false");
 		if ((packageName != null) && (!"".equals(packageName)) && (!"latest".equals(packageName.toLowerCase()))) {
 			url.append("&packageName=").append(packageName);
 		}
@@ -213,6 +322,7 @@ public class RapidDeployConnector {
 				url.append("&encryptionKey=").append(encryptionKey);
 			}
 		}
+		url.append("&allowFailedPkg=").append(allowFailedPkg);
 		return url.toString();
 	}
 
