@@ -1,11 +1,13 @@
 package com.midvision.rapiddeploy.connector;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
@@ -14,6 +16,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class RapidDeployConnector {
@@ -30,8 +33,8 @@ public class RapidDeployConnector {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
-			String packageName, boolean logEnabled) throws Exception {
+	public static String invokeRapidDeployDeploymentPollOutput(final String authenticationToken, final String serverUrl, final String projectName,
+			final String targetEnvironment, final String packageName, final boolean logEnabled) throws Exception {
 		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, null, null, null,
 				null, null, false);
 	}
@@ -53,9 +56,9 @@ public class RapidDeployConnector {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
-			String packageName, boolean logEnabled, String userName, String passwordEncrypted, String keyFilePath, String keyPassPhraseEncrypted,
-			String encryptionKey) throws Exception {
+	public static String invokeRapidDeployDeploymentPollOutput(final String authenticationToken, final String serverUrl, final String projectName,
+			final String targetEnvironment, final String packageName, final boolean logEnabled, final String userName, final String passwordEncrypted,
+			final String keyFilePath, final String keyPassPhraseEncrypted, final String encryptionKey) throws Exception {
 		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, userName,
 				passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, false);
 	}
@@ -73,8 +76,8 @@ public class RapidDeployConnector {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
-			String packageName, boolean logEnabled, boolean asynchronousJob) throws Exception {
+	public static String invokeRapidDeployDeploymentPollOutput(final String authenticationToken, final String serverUrl, final String projectName,
+			final String targetEnvironment, final String packageName, final boolean logEnabled, final boolean asynchronousJob) throws Exception {
 		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, null, null, null,
 				null, null, asynchronousJob);
 	}
@@ -94,8 +97,9 @@ public class RapidDeployConnector {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
-			String packageName, boolean logEnabled, boolean asynchronousJob, boolean allowFailedPkg) throws Exception {
+	public static String invokeRapidDeployDeploymentPollOutput(final String authenticationToken, final String serverUrl, final String projectName,
+			final String targetEnvironment, final String packageName, final boolean logEnabled, final boolean asynchronousJob, final boolean allowFailedPkg)
+			throws Exception {
 		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, null, null, null,
 				null, null, asynchronousJob, allowFailedPkg);
 	}
@@ -119,9 +123,9 @@ public class RapidDeployConnector {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
-			String packageName, boolean logEnabled, String userName, String passwordEncrypted, String keyFilePath, String keyPassPhraseEncrypted,
-			String encryptionKey, boolean asynchronousJob) throws Exception {
+	public static String invokeRapidDeployDeploymentPollOutput(final String authenticationToken, final String serverUrl, final String projectName,
+			final String targetEnvironment, final String packageName, final boolean logEnabled, final String userName, final String passwordEncrypted,
+			final String keyFilePath, final String keyPassPhraseEncrypted, final String encryptionKey, final boolean asynchronousJob) throws Exception {
 		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, userName,
 				passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, asynchronousJob, false);
 	}
@@ -145,14 +149,12 @@ public class RapidDeployConnector {
 	 * @return
 	 * @throws Exception
 	 */
-	public static String invokeRapidDeployDeploymentPollOutput(String authenticationToken, String serverUrl, String projectName, String targetEnvironment,
-			String packageName, boolean logEnabled, String userName, String passwordEncrypted, String keyFilePath, String keyPassPhraseEncrypted,
-			String encryptionKey, boolean asynchronousJob, boolean allowFailedPkg) throws Exception {
+	public static String invokeRapidDeployDeploymentPollOutput(final String authenticationToken, final String serverUrl, final String projectName,
+			final String targetEnvironment, final String packageName, final boolean logEnabled, final String userName, final String passwordEncrypted,
+			final String keyFilePath, final String keyPassPhraseEncrypted, final String encryptionKey, final boolean asynchronousJob,
+			final boolean allowFailedPkg) throws Exception {
 
-		boolean success = true;
-		StringBuilder response = new StringBuilder();
-
-		String[] envObjects = targetEnvironment.split("\\.");
+		final String[] envObjects = targetEnvironment.split("\\.");
 		String output;
 		if ((targetEnvironment.contains(".")) && (envObjects.length == 4)) {
 			output = invokeRapidDeployDeployment(authenticationToken, serverUrl, projectName, envObjects[0], envObjects[1], envObjects[2], envObjects[3],
@@ -164,137 +166,149 @@ public class RapidDeployConnector {
 			throw new RuntimeException("Invalid environment settings found! Environment: " + targetEnvironment);
 		}
 
+		final StringBuilder response = new StringBuilder();
 		response.append("RapidDeploy job successfully started!");
 		response.append(System.getProperty("line.separator"));
 
 		if (!asynchronousJob) {
-			String jobId = RapidDeployConnector.extractJobId(output);
-			if (jobId != null) {
-				response.append("Checking job status every 30 seconds...");
-				response.append(System.getProperty("line.separator"));
-				boolean runningJob = true;
-				long milisToSleep = 30000L;
-				while (runningJob) {
-					Thread.sleep(milisToSleep);
-					String jobDetails = RapidDeployConnector.pollRapidDeployJobDetails(authenticationToken, serverUrl, jobId);
-					String jobStatus = RapidDeployConnector.extractJobStatus(jobDetails);
-					response.append("Job status: " + jobStatus);
-					response.append(System.getProperty("line.separator"));
-					if ((jobStatus.equals("DEPLOYING")) || (jobStatus.equals("QUEUED")) || (jobStatus.equals("STARTING")) || (jobStatus.equals("EXECUTING"))) {
-						response.append("Job running, next check in 30 seconds...");
-						response.append(System.getProperty("line.separator"));
-						milisToSleep = 30000L;
-					} else if ((jobStatus.equals("REQUESTED")) || (jobStatus.equals("REQUESTED_SCHEDULED"))) {
-						response.append("Job in a REQUESTED state. Approval may be required in RapidDeploy to continue with the execution, next check in 30 seconds...");
-						response.append(System.getProperty("line.separator"));
-					} else if (jobStatus.equals("SCHEDULED")) {
-						response.append("Job in a SCHEDULED state, the execution will start in a future date, next check in 5 minutes...");
-						response.append(System.getProperty("line.separator"));
-						response.append("Printing out job details: ");
-						response.append(System.getProperty("line.separator"));
-						response.append(jobDetails);
-						response.append(System.getProperty("line.separator"));
-						milisToSleep = 300000L;
-					} else {
-						runningJob = false;
-						response.append("Job finished with status: " + jobStatus);
-						response.append(System.getProperty("line.separator"));
-						if ((jobStatus.equals("FAILED")) || (jobStatus.equals("REJECTED")) || (jobStatus.equals("CANCELLED"))
-								|| (jobStatus.equals("UNEXECUTABLE")) || (jobStatus.equals("TIMEDOUT")) || (jobStatus.equals("UNKNOWN"))) {
-							success = false;
-						}
-					}
-				}
-			} else {
-				throw new RuntimeException("Could not retrieve job id, running asynchronously!");
-			}
-			response.append(System.getProperty("line.separator"));
-			String logs = pollRapidDeployJobLog(authenticationToken, serverUrl, jobId);
-			if (!success) {
-				throw new RuntimeException("RapidDeploy job failed. Please check the output." + System.getProperty("line.separator") + logs);
-			}
-			response.append("RapidDeploy job successfully run. Please check the output.");
-			response.append(System.getProperty("line.separator"));
-			response.append(logs);
-			response.append(System.getProperty("line.separator"));
+			checkJobStatus(authenticationToken, serverUrl, output, response);
 		}
 		return logEnabled ? response.toString() : output;
 	}
 
-	private static String invokeRapidDeployDeployment(String authenticationToken, String serverUrl, String projectName, String server, String environment,
-			String instance, String application, String packageName, String userName, String passwordEncrypted, String keyFilePath,
-			String keyPassPhraseEncrypted, String encryptionKey, boolean allowFailedPkg) throws Exception {
-		String deploymentUrl = buildDeploymentUrl(serverUrl, projectName, server, environment, instance, application, packageName, userName, passwordEncrypted,
-				keyFilePath, keyPassPhraseEncrypted, encryptionKey, String.valueOf(allowFailedPkg));
-		String output = callRDServerPutReq(deploymentUrl, authenticationToken);
-		return output;
+	public static String invokeRapidDeployBuildPackage(final String authenticationToken, final String serverUrl, final String projectName,
+			final String packageName, final String archiveExtension, final boolean logEnabled) throws Exception {
+		return invokeRapidDeployBuildPackage(authenticationToken, serverUrl, projectName, packageName, archiveExtension, logEnabled, true);
 	}
 
-	public static String invokeRapidDeployBuildPackage(String authenticationToken, String serverUrl, String projectName, String packageName,
-			String archiveExtension, boolean logEnabled) throws Exception {
-		String deploymentUrl = buildPackageBuildUrl(serverUrl, projectName, packageName, archiveExtension);
-		String output = callRDServerPutReq(deploymentUrl, authenticationToken);
-		StringBuilder response = new StringBuilder();
-		response.append("Successfully invoked RapidDeploy build package with the following output: ");
+	public static String invokeRapidDeployBuildPackage(final String authenticationToken, final String serverUrl, final String projectName,
+			final String packageName, final String archiveExtension, final boolean logEnabled, final boolean asynchronousJob) throws Exception {
+
+		final String deploymentUrl = buildPackageBuildUrl(serverUrl, projectName, packageName, archiveExtension);
+		final String output = callRDServerPutReq(deploymentUrl, authenticationToken);
+
+		final StringBuilder response = new StringBuilder();
+		response.append("RapidDeploy package build succesfully requested!");
 		response.append(System.getProperty("line.separator"));
-		response.append(output);
-		response.append(System.getProperty("line.separator"));
+
+		if (!asynchronousJob) {
+			checkJobStatus(authenticationToken, serverUrl, output, response);
+		}
 		return logEnabled ? response.toString() : output;
 	}
 
-	public static String pollRapidDeployJobDetails(String authenticationToken, String serverUrl, String jobId) throws Exception {
-		String deploymentUrl = buildJobStatusUrl(serverUrl, jobId);
-		String output = callRDServerGetReq(deploymentUrl, authenticationToken);
+	public static String pollRapidDeployJobDetails(final String authenticationToken, final String serverUrl, final String jobId) throws Exception {
+		final String deploymentUrl = buildRequestUrl(serverUrl, "/ws/deployment/display/job/" + jobId);
+		final String output = callRDServerGetReq(deploymentUrl, authenticationToken);
 		return output;
 	}
 
-	public static String pollRapidDeployJobLog(String authenticationToken, String serverUrl, String jobId) throws Exception {
-		String deploymentUrl = buildJobLogUrl(serverUrl, jobId);
-		String output = callRDServerGetReq(deploymentUrl, authenticationToken);
+	public static String pollRapidDeployJobLog(final String authenticationToken, final String serverUrl, final String jobId) throws Exception {
+		final String deploymentUrl = buildRequestUrl(serverUrl, "/ws/deployment/showlog/job/" + jobId);
+		final String output = callRDServerGetReq(deploymentUrl, authenticationToken);
 		return output;
 	}
 
-	public static List<String> invokeRapidDeployListProjects(String authenticationToken, String serverUrl) throws Exception {
-		String projectListUrl = buildProjectListQueryUrl(serverUrl, authenticationToken);
-		String output = callRDServerGetReq(projectListUrl, authenticationToken);
+	public static List<String> invokeRapidDeployListProjects(final String authenticationToken, final String serverUrl) throws Exception {
+		final String projectListUrl = buildRequestUrl(serverUrl, "/ws/project/list");
+		final String output = callRDServerGetReq(projectListUrl, authenticationToken);
 		return extractTagValueFromXml(output, "name");
 	}
 
-	public static List<String> invokeRapidDeployListEnvironments(String authenticationToken, String serverUrl, String projectName) throws Exception {
-		String environmentListUrl = buildEnvironmentListQueryUrl(serverUrl, authenticationToken, projectName);
-		String output = callRDServerGetReq(environmentListUrl, authenticationToken);
-		return extractTagValueFromXml(output, "span");
+	public static List<String> invokeRapidDeployListTargets(final String authenticationToken, final String serverUrl, final String projectName)
+			throws Exception {
+		final String environmentListUrl = buildRequestUrl(serverUrl, "/ws/project/" + projectName + "/list");
+		final String output = callRDServerGetReq(environmentListUrl, authenticationToken);
+		final List<String> targetNames = extractTagValueFromXml(output, "span");
+		final List<String> targets = new ArrayList<String>();
+		for (final String target : targetNames) {
+			if (!"null".equals(target) && !target.startsWith("Project")) {
+				targets.add(target);
+			}
+		}
+		return targets;
 	}
 
-	public static List<String> invokeRapidDeployListPackages(String authenticationToken, String serverUrl, String projectName, String server,
-			String environment, String instance) throws Exception {
-		String packageListUrl = buildPackageListQueryUrl(serverUrl, authenticationToken, projectName, server, environment, instance);
-		String output = callRDServerGetReq(packageListUrl, authenticationToken);
-		return extractTagValueFromXml(output, "span");
+	public static List<String> invokeRapidDeployListPackages(final String authenticationToken, final String serverUrl, final String projectName)
+			throws Exception {
+		return invokeRapidDeployListPackages(authenticationToken, serverUrl, projectName, null, null, null);
 	}
 
-	public static List<String> invokeRapidDeployListPackages(String authenticationToken, String serverUrl, String projectName) throws Exception {
-		String packageListUrl = buildPackageListQueryUrl(serverUrl, authenticationToken, projectName);
-		String output = callRDServerGetReq(packageListUrl, authenticationToken);
-		return extractTagValueFromXml(output, "span");
+	public static List<String> invokeRapidDeployListPackages(final String authenticationToken, final String serverUrl, final String projectName,
+			final String server, final String environment, final String instance) throws Exception {
+		String packageListUrl;
+		if (server != null && !"".equals(server)) {
+			if (instance != null && !"".equals(instance)) {
+				packageListUrl = buildRequestUrl(serverUrl, "/ws/deployment/" + projectName + "/package/list/" + server + "/" + environment + "/" + instance);
+			} else {
+				packageListUrl = buildRequestUrl(serverUrl, "/ws/deployment/" + projectName + "/package/list/" + server + "/" + environment);
+			}
+		} else {
+			packageListUrl = buildRequestUrl(serverUrl, "/ws/deployment/" + projectName + "/package/list");
+		}
+		final String output = callRDServerGetReq(packageListUrl, authenticationToken);
+		final List<String> packageNames = extractTagValueFromXml(output, "span");
+		final List<String> packages = new ArrayList<String>();
+		for (final String pack : packageNames) {
+			if (!"null".equals(pack) && !pack.startsWith("Deployment")) {
+				packages.add(pack);
+			}
+		}
+		return packages;
 	}
 
-	public static List<String> invokeRapidDeployListServers(String authenticationToken, String serverUrl) throws Exception {
-		String serverListUrl = buildServerListQueryUrl(serverUrl, authenticationToken);
-		String output = callRDServerGetReq(serverListUrl, authenticationToken);
-		return extractTagValueFromXml(output, "span");
+	public static List<String> invokeRapidDeployListServers(final String authenticationToken, final String serverUrl) throws Exception {
+		final String serverListUrl = buildRequestUrl(serverUrl, "/ws/server/list");
+		final String output = callRDServerGetReq(serverListUrl, authenticationToken);
+		return extractXPathExpressionListFromXml(output, "/servers/Server/hostname/text()");
 	}
 
-	public static String invokeRapidDeployGetSingleServer(String authenticationToken, String serverUrl, String serverName) throws Exception {
-		String url = buildGetSingleServerQueryUrl(serverUrl, serverName);
-		String output = callRDServerGetReq(url, authenticationToken);
-		return extractHostname(output);
+	private static String invokeRapidDeployDeployment(final String authenticationToken, final String serverUrl, final String projectName, final String server,
+			final String environment, final String instance, final String application, final String packageName, final String userName,
+			final String passwordEncrypted, final String keyFilePath, final String keyPassPhraseEncrypted, final String encryptionKey,
+			final boolean allowFailedPkg) throws Exception {
+		final String deploymentUrl = buildDeploymentUrl(serverUrl, projectName, server, environment, instance, application, packageName, userName,
+				passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, String.valueOf(allowFailedPkg));
+		return callRDServerPutReq(deploymentUrl, authenticationToken);
 	}
 
-	private static String buildDeploymentUrl(String serverUrl, String projectName, String server, String environment, String instance, String application,
-			String packageName, String userName, String passwordEncrypted, String keyFilePath, String keyPassPhraseEncrypted, String encryptionKey,
-			String allowFailedPkg) {
-		StringBuilder url = new StringBuilder("");
+	/** URL GENERATION METHODS **/
+
+	private static String buildRequestUrl(String serverUrl, final String context) {
+		if (serverUrl != null && serverUrl.endsWith("/")) {
+			serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
+		}
+		final StringBuilder url = new StringBuilder();
+		if (!serverUrl.startsWith("http://")) {
+			url.append("http://");
+		}
+		url.append(serverUrl).append(context);
+		return url.toString();
+	}
+
+	private static String buildPackageBuildUrl(String serverUrl, final String projectName, final String packageName, final String archiveExtension) {
+		if (serverUrl != null && serverUrl.endsWith("/")) {
+			serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
+		}
+		final StringBuilder url = new StringBuilder();
+		if (!serverUrl.startsWith("http://")) {
+			url.append("http://");
+		}
+		url.append(serverUrl).append("/ws/deployment/");
+		url.append(projectName).append("/package/create?packageName=");
+		url.append(packageName == null ? "" : packageName).append("&archiveExtension=")
+				.append(archiveExtension == null || "".equals(archiveExtension) ? "jar" : archiveExtension);
+
+		return url.toString();
+	}
+
+	private static String buildDeploymentUrl(String serverUrl, final String projectName, final String server, final String environment, final String instance,
+			final String application, final String packageName, final String userName, final String passwordEncrypted, final String keyFilePath,
+			final String keyPassPhraseEncrypted, final String encryptionKey, final String allowFailedPkg) {
+		if (serverUrl != null && serverUrl.endsWith("/")) {
+			serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
+		}
+		final StringBuilder url = new StringBuilder();
 		if (!serverUrl.startsWith("http://")) {
 			url.append("http://");
 		}
@@ -326,120 +340,31 @@ public class RapidDeployConnector {
 		return url.toString();
 	}
 
-	private static String buildPackageBuildUrl(String serverUrl, String projectName, String packageName, String archiveExtension) {
-		StringBuilder url = new StringBuilder("");
-		if (!serverUrl.startsWith("http://")) {
-			url.append("http://");
-		}
-		url.append(serverUrl).append("/ws/deployment/");
-		url.append(projectName).append("/package/create?packageName=");
-		url.append(packageName == null ? "" : packageName).append("&archiveExtension=").append(archiveExtension == null ? "jar" : archiveExtension);
+	/** WEB SERVICE CALL METHODS **/
 
-		return url.toString();
-	}
-
-	private static String buildJobStatusUrl(String serverUrl, String jobId) {
-		StringBuilder url = new StringBuilder("");
-		if (!serverUrl.startsWith("http://")) {
-			url.append("http://");
-		}
-		url.append(serverUrl).append("/ws/deployment/display/job/" + jobId);
-		return url.toString();
-	}
-
-	private static String buildJobLogUrl(String serverUrl, String jobId) {
-		StringBuilder url = new StringBuilder("");
-		if (!serverUrl.startsWith("http://")) {
-			url.append("http://");
-		}
-		url.append(serverUrl).append("/ws/deployment/showlog/job/" + jobId);
-		return url.toString();
-	}
-
-	private static String buildProjectListQueryUrl(String serverUrl, String authenticationToken) {
-		StringBuilder url = new StringBuilder("");
-		if (!serverUrl.startsWith("http://")) {
-			url.append("http://");
-		}
-		url.append(serverUrl).append("/ws/project/list");
-
-		return url.toString();
-	}
-
-	private static String buildEnvironmentListQueryUrl(String serverUrl, String authenticationToken, String projectName) {
-		StringBuilder url = new StringBuilder("");
-		if (!serverUrl.startsWith("http://")) {
-			url.append("http://");
-		}
-		url.append(serverUrl).append("/ws/project/" + projectName + "/list");
-
-		return url.toString();
-	}
-
-	private static String buildPackageListQueryUrl(String serverUrl, String authenticationToken, String projectName, String server, String environment,
-			String instance) {
-		StringBuilder url = new StringBuilder("");
-		if (!serverUrl.startsWith("http://")) {
-			url.append("http://");
-		}
-		if (instance != null && !"".equals(instance)) {
-			url.append(serverUrl).append("/ws/deployment/" + projectName + "/package/list/" + server + "/" + environment + "/" + instance);
-		} else {
-			url.append(serverUrl).append("/ws/deployment/" + projectName + "/package/list/" + server + "/" + environment);
-		}
-		return url.toString();
-	}
-
-	private static String buildPackageListQueryUrl(String serverUrl, String authenticationToken, String projectName) {
-		StringBuilder url = new StringBuilder("");
-		if (!serverUrl.startsWith("http://")) {
-			url.append("http://");
-		}
-		url.append(serverUrl).append("/ws/deployment/" + projectName + "/package/list");
-		return url.toString();
-	}
-
-	private static String buildServerListQueryUrl(String serverUrl, String authenticationToken) {
-		StringBuilder url = new StringBuilder("");
-		if (!serverUrl.startsWith("http://")) {
-			url.append("http://");
-		}
-		url.append(serverUrl).append("/ws/server/list");
-		return url.toString();
-	}
-
-	private static String buildGetSingleServerQueryUrl(String serverUrl, String serverName) {
-		StringBuilder url = new StringBuilder("");
-		if (!serverUrl.startsWith("http://")) {
-			url.append("http://");
-		}
-		url.append(serverUrl).append("/ws/server/" + serverName);
-		return url.toString();
-	}
-
-	private static String callRDServerPutReq(String url, String authenticationToken) throws Exception {
-		DefaultHttpClient httpClient = new DefaultHttpClient();
-		HttpPut putRequest = new HttpPut(url);
+	private static String callRDServerPutReq(final String url, final String authenticationToken) throws Exception {
+		final DefaultHttpClient httpClient = new DefaultHttpClient();
+		final HttpPut putRequest = new HttpPut(url);
 		putRequest.addHeader("Authorization", authenticationToken);
-		HttpResponse response = httpClient.execute(putRequest);
-		InputStream responseOutput = response.getEntity().getContent();
-		int status = response.getStatusLine().getStatusCode();
+		final HttpResponse response = httpClient.execute(putRequest);
+		final InputStream responseOutput = response.getEntity().getContent();
+		final int status = response.getStatusLine().getStatusCode();
 
 		if ((status >= 400) && (status < 500)) {
-			String exceptionContents = response.getStatusLine().toString() + "\nError calling RapidDeploy server on url:" + url + "\nCause: "
+			final String exceptionContents = response.getStatusLine().toString() + "\nError calling RapidDeploy server on url:" + url + "\nCause: "
 					+ getInputstreamContent(responseOutput);
 			throw new Exception(exceptionContents);
 		}
 		return getInputstreamContent(responseOutput);
 	}
 
-	private static String callRDServerGetReq(String url, String authenticationToken) throws Exception {
-		DefaultHttpClient httpClient = new DefaultHttpClient();
-		HttpGet getRequest = new HttpGet(url);
+	private static String callRDServerGetReq(final String url, final String authenticationToken) throws Exception {
+		final DefaultHttpClient httpClient = new DefaultHttpClient();
+		final HttpGet getRequest = new HttpGet(url);
 		getRequest.addHeader("Authorization", authenticationToken);
-		HttpResponse response = httpClient.execute(getRequest);
-		InputStream responseOutput = response.getEntity().getContent();
-		int status = response.getStatusLine().getStatusCode();
+		final HttpResponse response = httpClient.execute(getRequest);
+		final InputStream responseOutput = response.getEntity().getContent();
+		final int status = response.getStatusLine().getStatusCode();
 
 		if ((status >= 400) && (status < 500)) {
 			throw new Exception(response.getStatusLine().toString() + "\nError calling RapidDeploy server on url:" + url + "\nCause: "
@@ -448,28 +373,81 @@ public class RapidDeployConnector {
 		return getInputstreamContent(responseOutput);
 	}
 
-	private static String getInputstreamContent(InputStream inputstream) throws java.io.IOException {
+	private static String getInputstreamContent(final InputStream inputstream) throws java.io.IOException {
 		String output = "";
-
-		byte[] buf = new byte['?'];
+		final byte[] buf = new byte['?'];
 		int nread;
 		while ((nread = inputstream.read(buf)) > 0) {
-			String line = new String(buf, 0, nread);
+			final String line = new String(buf, 0, nread);
 			output = output + line;
 		}
 		return output;
 	}
 
-	public static List<String> extractTagValueFromXml(String xmlContent, String tagName) throws Exception {
-		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		Document document = builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(xmlContent)));
-		org.w3c.dom.Element rootElement = document.getDocumentElement();
+	private static void checkJobStatus(final String authenticationToken, final String serverUrl, final String output, final StringBuilder response)
+			throws Exception, InterruptedException {
+		boolean success = true;
+		final String jobId = extractJobId(output);
+		if (jobId != null) {
+			response.append("Checking job status every 30 seconds...");
+			response.append(System.getProperty("line.separator"));
+			boolean runningJob = true;
+			long milisToSleep = 30000L;
+			while (runningJob) {
+				Thread.sleep(milisToSleep);
+				final String jobDetails = RapidDeployConnector.pollRapidDeployJobDetails(authenticationToken, serverUrl, jobId);
+				final String jobStatus = RapidDeployConnector.extractJobStatus(jobDetails);
+				response.append("Job status: " + jobStatus);
+				response.append(System.getProperty("line.separator"));
+				if ((jobStatus.equals("DEPLOYING")) || (jobStatus.equals("QUEUED")) || (jobStatus.equals("STARTING")) || (jobStatus.equals("EXECUTING"))) {
+					response.append("Job running, next check in 30 seconds...");
+					response.append(System.getProperty("line.separator"));
+					milisToSleep = 30000L;
+				} else if ((jobStatus.equals("REQUESTED")) || (jobStatus.equals("REQUESTED_SCHEDULED"))) {
+					response.append("Job in a REQUESTED state. Approval may be required in RapidDeploy to continue with the execution, next check in 30 seconds...");
+					response.append(System.getProperty("line.separator"));
+				} else if (jobStatus.equals("SCHEDULED")) {
+					response.append("Job in a SCHEDULED state, the execution will start in a future date, next check in 5 minutes...");
+					response.append(System.getProperty("line.separator"));
+					response.append("Printing out job details: ");
+					response.append(System.getProperty("line.separator"));
+					response.append(jobDetails);
+					response.append(System.getProperty("line.separator"));
+					milisToSleep = 300000L;
+				} else {
+					runningJob = false;
+					response.append("Job finished with status: " + jobStatus);
+					response.append(System.getProperty("line.separator"));
+					if ((jobStatus.equals("FAILED")) || (jobStatus.equals("REJECTED")) || (jobStatus.equals("CANCELLED")) || (jobStatus.equals("UNEXECUTABLE"))
+							|| (jobStatus.equals("TIMEDOUT")) || (jobStatus.equals("UNKNOWN"))) {
+						success = false;
+					}
+				}
+			}
+		} else {
+			throw new RuntimeException("Could not retrieve job id, running asynchronously!");
+		}
+		response.append(System.getProperty("line.separator"));
+		final String logs = pollRapidDeployJobLog(authenticationToken, serverUrl, jobId);
+		if (!success) {
+			throw new RuntimeException("RapidDeploy job failed. Please check the output." + System.getProperty("line.separator") + logs);
+		}
+		response.append("RapidDeploy job successfully run. Please check the output.");
+		response.append(System.getProperty("line.separator"));
+		response.append(logs);
+		response.append(System.getProperty("line.separator"));
+	}
 
-		List<String> outputValues = new java.util.ArrayList<String>();
-		NodeList list = rootElement.getElementsByTagName(tagName);
+	private static List<String> extractTagValueFromXml(final String xmlContent, final String tagName) throws Exception {
+		final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		final Document document = builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(xmlContent)));
+		final org.w3c.dom.Element rootElement = document.getDocumentElement();
+
+		final List<String> outputValues = new ArrayList<String>();
+		final NodeList list = rootElement.getElementsByTagName(tagName);
 		if ((list != null) && (list.getLength() > 0)) {
 			for (int i = 0; i < list.getLength(); i++) {
-				NodeList subList = list.item(i).getChildNodes();
+				final NodeList subList = list.item(i).getChildNodes();
 
 				if ((subList != null) && (subList.getLength() > 0)) {
 					for (int j = 0; j < subList.getLength(); j++) {
@@ -481,18 +459,34 @@ public class RapidDeployConnector {
 		return outputValues;
 	}
 
-	public static String extractXPathExpressionFromXml(String xmlContent, String xpathExpr) throws Exception {
-		DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-		Document document = builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(xmlContent)));
-		XPathFactory xPathfactory = XPathFactory.newInstance();
-		XPath xpath = xPathfactory.newXPath();
-		XPathExpression expr = xpath.compile(xpathExpr);
+	@SuppressWarnings("unused")
+	private static String extractXPathExpressionFromXml(final String xmlContent, final String xpathExpr) throws Exception {
+		final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		final Document document = builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(xmlContent)));
+		final XPathFactory xPathfactory = XPathFactory.newInstance();
+		final XPath xpath = xPathfactory.newXPath();
+		final XPathExpression expr = xpath.compile(xpathExpr);
 		return expr.evaluate(document);
 	}
 
-	public static String extractJobStatus(String responseOutput) throws Exception {
+	private static List<String> extractXPathExpressionListFromXml(final String xmlContent, final String xpathExpr) throws Exception {
+		List<String> resList = new ArrayList<String>();
+		final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		final Document document = builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(xmlContent)));
+		final XPathFactory xPathfactory = XPathFactory.newInstance();
+		final XPath xpath = xPathfactory.newXPath();
+		final XPathExpression expr = xpath.compile(xpathExpr);
+		NodeList list = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+		for (int i = 0; i < list.getLength(); i++) {
+			Node node = list.item(i);
+			resList.add(node.getNodeValue());
+		}
+		return resList;
+	}
+
+	public static String extractJobStatus(final String responseOutput) throws Exception {
 		String jobStatus = null;
-		List<String> responseData = extractTagValueFromXml(responseOutput, "span");
+		final List<String> responseData = extractTagValueFromXml(responseOutput, "span");
 		for (int i = 0; i < responseData.size(); i++) {
 			if ((((String) responseData.get(i)).contains("Job Status")) && (responseData.size() >= i + 1)) {
 				jobStatus = (String) responseData.get(i + 1);
@@ -501,23 +495,20 @@ public class RapidDeployConnector {
 		return jobStatus;
 	}
 
-	public void test() {
-	}
-
-	public static String extractJobId(String responseOutput) throws Exception {
+	public static String extractJobId(final String responseOutput) throws Exception {
 		String jobId = null;
-		List<String> responseData = extractTagValueFromXml(responseOutput, "span");
+		final List<String> responseData = extractTagValueFromXml(responseOutput, "span");
 		for (int i = 0; i < responseData.size(); i++) {
-			if ((((String) responseData.get(i)).contains("Job ID")) && (responseData.size() >= i + 1)) {
+			final String tmpStr = (String) responseData.get(i);
+			if ((tmpStr.contains("Job ID")) && (responseData.size() >= i + 1)) {
 				jobId = (String) responseData.get(i + 1);
+			}
+			if ((tmpStr.contains("Job Id")) && (responseData.size() >= i + 1)) {
+				if (jobId == null || "".equals(jobId)) {
+					jobId = tmpStr.substring(tmpStr.indexOf("Job Id [") + 8, tmpStr.indexOf("]"));
+				}
 			}
 		}
 		return jobId;
-	}
-
-	public static String extractHostname(String responseOutput) throws Exception {
-		String hostname = null;
-		hostname = extractXPathExpressionFromXml(responseOutput, "/Server/hostname/text()");
-		return hostname;
 	}
 }
