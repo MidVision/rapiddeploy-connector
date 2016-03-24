@@ -1,6 +1,8 @@
 package com.midvision.rapiddeploy.connector;
 
+import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,9 +14,10 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -343,7 +346,7 @@ public class RapidDeployConnector {
 	/** WEB SERVICE CALL METHODS **/
 
 	private static String callRDServerPutReq(final String url, final String authenticationToken) throws Exception {
-		final DefaultHttpClient httpClient = new DefaultHttpClient();
+		final HttpClient httpClient = HttpClientBuilder.create().build();
 		final HttpPut putRequest = new HttpPut(url);
 		putRequest.addHeader("Authorization", authenticationToken);
 		final HttpResponse response = httpClient.execute(putRequest);
@@ -359,7 +362,7 @@ public class RapidDeployConnector {
 	}
 
 	private static String callRDServerGetReq(final String url, final String authenticationToken) throws Exception {
-		final DefaultHttpClient httpClient = new DefaultHttpClient();
+		final HttpClient httpClient = HttpClientBuilder.create().build();
 		final HttpGet getRequest = new HttpGet(url);
 		getRequest.addHeader("Authorization", authenticationToken);
 		final HttpResponse response = httpClient.execute(getRequest);
@@ -374,14 +377,14 @@ public class RapidDeployConnector {
 	}
 
 	private static String getInputstreamContent(final InputStream inputstream) throws java.io.IOException {
-		String output = "";
-		final byte[] buf = new byte['?'];
-		int nread;
-		while ((nread = inputstream.read(buf)) > 0) {
-			final String line = new String(buf, 0, nread);
-			output = output + line;
-		}
-		return output;
+		StringBuilder inputStringBuilder = new StringBuilder();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputstream, "UTF-8"));
+        String line = bufferedReader.readLine();
+        while(line != null){
+            inputStringBuilder.append(line);inputStringBuilder.append('\n');
+            line = bufferedReader.readLine();
+        }
+		return inputStringBuilder.toString();
 	}
 
 	private static void checkJobStatus(final String authenticationToken, final String serverUrl, final String output, final StringBuilder response)
