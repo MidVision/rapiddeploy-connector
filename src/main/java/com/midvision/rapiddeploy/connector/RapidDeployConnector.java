@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -26,7 +27,7 @@ public class RapidDeployConnector {
 
 	/**
 	 * Runs a Job in RapidDeploy with basic information.
-	 * 
+	 *
 	 * @param authenticationToken
 	 * @param serverUrl
 	 * @param projectName
@@ -44,7 +45,7 @@ public class RapidDeployConnector {
 
 	/**
 	 * Runs a Job in RapidDeploy with specific transport credentials.
-	 * 
+	 *
 	 * @param authenticationToken
 	 * @param serverUrl
 	 * @param projectName
@@ -68,7 +69,7 @@ public class RapidDeployConnector {
 
 	/**
 	 * Runs a Job in RapidDeploy providing the option to run it asynchronously.
-	 * 
+	 *
 	 * @param authenticationToken
 	 * @param serverUrl
 	 * @param projectName
@@ -88,7 +89,7 @@ public class RapidDeployConnector {
 	/**
 	 * Runs a Job in RapidDeploy providing the options to run it asynchronously
 	 * and selecting if running or not previously failed packages.
-	 * 
+	 *
 	 * @param authenticationToken
 	 * @param serverUrl
 	 * @param projectName
@@ -110,7 +111,7 @@ public class RapidDeployConnector {
 	/**
 	 * Runs a Job in RapidDeploy with specific transport credentials and
 	 * providing the option to run it asynchronously as well.
-	 * 
+	 *
 	 * @param authenticationToken
 	 * @param serverUrl
 	 * @param projectName
@@ -135,7 +136,7 @@ public class RapidDeployConnector {
 
 	/**
 	 * Runs a Job in RapidDeploy with all possible options (Main method).
-	 * 
+	 *
 	 * @param authenticationToken
 	 * @param serverUrl
 	 * @param projectName
@@ -177,6 +178,19 @@ public class RapidDeployConnector {
 			checkJobStatus(authenticationToken, serverUrl, output, response);
 		}
 		return logEnabled ? response.toString() : output;
+	}
+
+	public static String invokeRapidDeployJobPlanPollOutput(final String authenticationToken, final String serverUrl, final String jobPlanId, final boolean asynchronousJob)
+	throws Exception {
+		String output;
+		output = invokeRapiDeployJobPlan(authenticationToken, serverUrl, jobPlanId);
+		final StringBuilder response = new StringBuilder();
+		response.append("RapidDeploy jobPlan successfully started");
+		response.append(System.getProperty("line.separator"));
+		if(!asynchronousJob){
+			checkJobStatus(authenticationToken, serverUrl, output, response);
+		}
+		return output;
 	}
 
 	public static String invokeRapidDeployBuildPackage(final String authenticationToken, final String serverUrl, final String projectName,
@@ -275,6 +289,11 @@ public class RapidDeployConnector {
 		return callRDServerPutReq(deploymentUrl, authenticationToken);
 	}
 
+	private static String invokeRapiDeployJobPlan(final String authenticationToken, final String serverUrl, final String jobPlanId) throws Exception {
+		final String runJobPlanUrl = buildRunJobPlanUrl(serverUrl, jobPlanId);
+		return callRDServerPutReq(runJobPlanUrl, authenticationToken);
+	}
+
 	/** URL GENERATION METHODS **/
 
 	private static String buildRequestUrl(String serverUrl, final String context) {
@@ -302,6 +321,20 @@ public class RapidDeployConnector {
 		url.append(packageName == null ? "" : packageName).append("&archiveExtension=")
 				.append(archiveExtension == null || "".equals(archiveExtension) ? "jar" : archiveExtension);
 
+		return url.toString();
+	}
+
+	private static String buildRunJobPlanUrl(String serverUrl, final String jobPlanId){
+		if (serverUrl != null && serverUrl.endsWith("/")) {
+			serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
+		}
+		final StringBuilder url = new StringBuilder();
+		if (!serverUrl.startsWith("http://")) {
+			url.append("http://");
+		}
+		url.append(serverUrl).append("/ws/deployment/");
+		url.append("jobPlan/run/");
+		url.append(jobPlanId);
 		return url.toString();
 	}
 
@@ -496,6 +529,18 @@ public class RapidDeployConnector {
 			}
 		}
 		return jobStatus;
+	}
+
+	public static List<String> extractIncludedJobIdsUnderPipelineJob (final String responseOutput) throws Exception {
+		List<String> includedJobIds = new ArrayList<String>();
+		final List<String> responseData = extractTagValueFromXml(responseOutput, "span");
+		for (int i = 0; i < responseData.size(); i++) {
+			if ((((String) responseData.get(i)).contains("Internal Job ID")) && (responseData.size() >= i + 1)) {
+				includedJobIds.add((String) responseData.get(i + 1));
+			}
+		}
+		Collections.sort(includedJobIds);
+		return includedJobIds;
 	}
 
 	public static String extractJobId(final String responseOutput) throws Exception {
