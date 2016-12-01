@@ -5,7 +5,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Collections;
+import java.util.HashMap;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -294,6 +296,12 @@ public class RapidDeployConnector {
 		return callRDServerPutReq(runJobPlanUrl, authenticationToken);
 	}
 
+	public static String invokeRapidDeployJobPlans(final String authenticationToken, final String serverUrl) throws Exception {
+		final String jobPlanListUrl = buildRequestUrl(serverUrl, "/ws/deployment/jobPlan/list");
+		final String output = callRDServerGetReq(jobPlanListUrl, authenticationToken);
+		return output;
+	}
+
 	/** URL GENERATION METHODS **/
 
 	private static String buildRequestUrl(String serverUrl, final String context) {
@@ -474,7 +482,51 @@ public class RapidDeployConnector {
 		response.append(System.getProperty("line.separator"));
 	}
 
-	private static List<String> extractTagValueFromXml(final String xmlContent, final String tagName) throws Exception {
+	public static Map<String, String> extractJobPlansFromXml(final String xmlContent) throws Exception {
+		final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		final Document document = builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(xmlContent)));
+		final org.w3c.dom.Element rootElement = document.getDocumentElement();
+
+		final NodeList list = rootElement.getElementsByTagName("JobPlan");
+		Map<String, String> result = new HashMap<String, String>();
+		if ((list != null) && (list.getLength() > 0)) {
+			for (int i = 0; i < list.getLength(); i++) {
+				final NodeList subList = list.item(i).getChildNodes();
+				if ((subList != null) && (subList.getLength() > 0)) {
+					String id = null;
+					String name = null;
+					String securityName = "all";
+					for(int j = 0; j < subList.getLength(); j++){
+						Node node = subList.item(j);
+						if(node.getChildNodes() == null){
+							continue;
+						}
+						if(node.getNodeName().equals("id")){
+							for(int k = 0; k < node.getChildNodes().getLength(); k++){
+								id = node.getChildNodes().item(k).getNodeValue();
+							}
+						}
+						if(node.getNodeName().equals("name")){
+							for(int k = 0; k < node.getChildNodes().getLength(); k++){
+								name = node.getChildNodes().item(k).getNodeValue();
+							}
+						}
+						if(node.getNodeName().equals("securityName")){
+							for(int k = 0; k < node.getChildNodes().getLength(); k++){
+								securityName = node.getChildNodes().item(k).getNodeValue();
+							}
+						}
+					}
+					if(id != null){
+						result.put(id, "[" + id + "] " + name + " (" + securityName + ")");
+					}
+				}
+			}
+		}
+		return result;
+	}
+
+	public static List<String> extractTagValueFromXml(final String xmlContent, final String tagName) throws Exception {
 		final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 		final Document document = builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(xmlContent)));
 		final org.w3c.dom.Element rootElement = document.getDocumentElement();
