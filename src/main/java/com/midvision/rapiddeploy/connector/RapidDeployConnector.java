@@ -4,10 +4,11 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -89,6 +90,28 @@ public class RapidDeployConnector {
 	}
 
 	/**
+	 * Runs a Job in RapidDeploy providing the option to run it asynchronously
+	 * and a list of data dictionary items.
+	 * 
+	 * @param authenticationToken
+	 * @param serverUrl
+	 * @param projectName
+	 * @param targetEnvironment
+	 * @param packageName
+	 * @param logEnabled
+	 * @param asynchronousJob
+	 * @param dataDictionary
+	 * @return
+	 * @throws Exception
+	 */
+	public static String invokeRapidDeployDeploymentPollOutput(final String authenticationToken, final String serverUrl, final String projectName,
+			final String targetEnvironment, final String packageName, final boolean logEnabled, final boolean asynchronousJob, final Map<String, String> dataDictionary) 
+					throws Exception {
+		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, null, null, null,
+				null, null, asynchronousJob, false, dataDictionary);
+	}
+
+	/**
 	 * Runs a Job in RapidDeploy providing the options to run it asynchronously
 	 * and selecting if running or not previously failed packages.
 	 *
@@ -135,10 +158,11 @@ public class RapidDeployConnector {
 		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, userName,
 				passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, asynchronousJob, false);
 	}
-
+	
 	/**
-	 * Runs a Job in RapidDeploy with all possible options (Main method).
-	 *
+	 * Runs a Job in RapidDeploy with all possible options except the data
+	 * dictionary list.
+	 * 
 	 * @param authenticationToken
 	 * @param serverUrl
 	 * @param projectName
@@ -159,15 +183,43 @@ public class RapidDeployConnector {
 			final String targetEnvironment, final String packageName, final boolean logEnabled, final String userName, final String passwordEncrypted,
 			final String keyFilePath, final String keyPassPhraseEncrypted, final String encryptionKey, final boolean asynchronousJob,
 			final boolean allowFailedPkg) throws Exception {
+		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, userName,
+				passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, asynchronousJob, allowFailedPkg, new HashMap<String, String>());
+	}
+
+	/**
+	 * Runs a Job in RapidDeploy with all possible options (Main method).
+	 *
+	 * @param authenticationToken
+	 * @param serverUrl
+	 * @param projectName
+	 * @param targetEnvironment
+	 * @param packageName
+	 * @param logEnabled
+	 * @param userName
+	 * @param passwordEncrypted
+	 * @param keyFilePath
+	 * @param keyPassPhraseEncrypted
+	 * @param encryptionKey
+	 * @param asynchronousJob
+	 * @param allowFailedPkg
+	 * @param dataDictionary
+	 * @return
+	 * @throws Exception
+	 */
+	public static String invokeRapidDeployDeploymentPollOutput(final String authenticationToken, final String serverUrl, final String projectName,
+			final String targetEnvironment, final String packageName, final boolean logEnabled, final String userName, final String passwordEncrypted,
+			final String keyFilePath, final String keyPassPhraseEncrypted, final String encryptionKey, final boolean asynchronousJob,
+			final boolean allowFailedPkg, final Map<String, String> dataDictionary) throws Exception {
 
 		final String[] envObjects = targetEnvironment.split("\\.");
 		String output;
 		if ((targetEnvironment.contains(".")) && (envObjects.length == 4)) {
 			output = invokeRapidDeployDeployment(authenticationToken, serverUrl, projectName, envObjects[0], envObjects[1], envObjects[2], envObjects[3],
-					packageName, userName, passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, allowFailedPkg);
+					packageName, userName, passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, allowFailedPkg, dataDictionary);
 		} else if ((targetEnvironment.contains(".")) && (envObjects.length == 3)) {
 			output = invokeRapidDeployDeployment(authenticationToken, serverUrl, projectName, envObjects[0], envObjects[1], null, envObjects[2], packageName,
-					userName, passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, allowFailedPkg);
+					userName, passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, allowFailedPkg, dataDictionary);
 		} else {
 			throw new RuntimeException("Invalid environment settings found! Environment: " + targetEnvironment);
 		}
@@ -285,9 +337,9 @@ public class RapidDeployConnector {
 	private static String invokeRapidDeployDeployment(final String authenticationToken, final String serverUrl, final String projectName, final String server,
 			final String environment, final String instance, final String application, final String packageName, final String userName,
 			final String passwordEncrypted, final String keyFilePath, final String keyPassPhraseEncrypted, final String encryptionKey,
-			final boolean allowFailedPkg) throws Exception {
+			final boolean allowFailedPkg, Map<String, String> dataDictionary) throws Exception {
 		final String deploymentUrl = buildDeploymentUrl(serverUrl, projectName, server, environment, instance, application, packageName, userName,
-				passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, String.valueOf(allowFailedPkg));
+				passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, String.valueOf(allowFailedPkg), dataDictionary);
 		return callRDServerPutReq(deploymentUrl, authenticationToken);
 	}
 
@@ -348,7 +400,7 @@ public class RapidDeployConnector {
 
 	private static String buildDeploymentUrl(String serverUrl, final String projectName, final String server, final String environment, final String instance,
 			final String application, final String packageName, final String userName, final String passwordEncrypted, final String keyFilePath,
-			final String keyPassPhraseEncrypted, final String encryptionKey, final String allowFailedPkg) {
+			final String keyPassPhraseEncrypted, final String encryptionKey, final String allowFailedPkg, Map<String, String> dataDictionary) {
 		if (serverUrl != null && serverUrl.endsWith("/")) {
 			serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
 		}
@@ -381,6 +433,9 @@ public class RapidDeployConnector {
 			}
 		}
 		url.append("&allowFailedPkg=").append(allowFailedPkg);
+		for (Entry<String, String> dataItem : dataDictionary.entrySet()) {
+			url.append("&dictionaryItem=").append(dataItem.getKey()).append("=").append(dataItem.getValue());
+		}
 		return url.toString();
 	}
 

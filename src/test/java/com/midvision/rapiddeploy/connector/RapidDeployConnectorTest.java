@@ -3,7 +3,10 @@ package com.midvision.rapiddeploy.connector;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.net.URLEncoder;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -15,7 +18,7 @@ import org.junit.Test;
 @Ignore
 public class RapidDeployConnectorTest {
 
-	private final String RD_URL = "http://localhost:8080/MidVision";
+	private final String RD_URL = "http://localhost:9090/MidVision";
 	private final String RD_AUTH_TOKEN = "bXZhZG1pbjp7X01WQEVOQyNffVdHLzFmNVMreVpRPQ=="; // mvadmin/mvadmin
 	private final String RD_PROJECT = "CI_Test";
 	private final String RD_PACK_NAME = "";
@@ -54,8 +57,11 @@ public class RapidDeployConnectorTest {
 	@Test
 	public void testInvokeRapidDeployDeploymentPollOutput() {
 		try {
+			Map<String, String> dataDictionary = new HashMap<String, String>();
+			dataDictionary.put("@@echoMessageA@@", URLEncoder.encode("Ciao Mondo!", "UTF-8"));
+			dataDictionary.put("@@echoMessageB@@", URLEncoder.encode("Salut Monde!", "UTF-8"));
 			System.out.println("Invoking a RapidDeploy deployment of the previous package...");
-			final String output = RapidDeployConnector.invokeRapidDeployDeploymentPollOutput(RD_AUTH_TOKEN, RD_URL, RD_PROJECT, RD_TARGET, RD_PACK_NAME, true, false);
+			final String output = RapidDeployConnector.invokeRapidDeployDeploymentPollOutput(RD_AUTH_TOKEN, RD_URL, RD_PROJECT, RD_TARGET, RD_PACK_NAME, true, false, dataDictionary);
 			assertTrue("ERROR during the deployment!", output.contains("Completed RapidDeploy Deployment Request"));
 			System.out.println("---> Completed RapidDeploy Deployment Request!");
 			System.out.println();
