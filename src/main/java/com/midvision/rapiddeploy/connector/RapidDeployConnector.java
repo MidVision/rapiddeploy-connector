@@ -3,6 +3,8 @@ package com.midvision.rapiddeploy.connector;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -400,7 +402,7 @@ public class RapidDeployConnector {
 
 	private static String buildDeploymentUrl(String serverUrl, final String projectName, final String server, final String environment, final String instance,
 			final String application, final String packageName, final String userName, final String passwordEncrypted, final String keyFilePath,
-			final String keyPassPhraseEncrypted, final String encryptionKey, final String allowFailedPkg, Map<String, String> dataDictionary) {
+			final String keyPassPhraseEncrypted, final String encryptionKey, final String allowFailedPkg, Map<String, String> dataDictionary) throws UnsupportedEncodingException {
 		if (serverUrl != null && serverUrl.endsWith("/")) {
 			serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
 		}
@@ -434,7 +436,8 @@ public class RapidDeployConnector {
 		}
 		url.append("&allowFailedPkg=").append(allowFailedPkg);
 		for (Entry<String, String> dataItem : dataDictionary.entrySet()) {
-			url.append("&dictionaryItem=").append(dataItem.getKey()).append("=").append(dataItem.getValue());
+			url.append("&dictionaryItem=").append(URLEncoder.encode(dataItem.getKey(), "UTF-8"))
+					.append(URLEncoder.encode("=", "UTF-8")).append(URLEncoder.encode(dataItem.getValue(), "UTF-8"));
 		}
 		return url.toString();
 	}

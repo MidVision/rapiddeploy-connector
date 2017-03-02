@@ -3,7 +3,6 @@ package com.midvision.rapiddeploy.connector;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,8 +57,8 @@ public class RapidDeployConnectorTest {
 	public void testInvokeRapidDeployDeploymentPollOutput() {
 		try {
 			Map<String, String> dataDictionary = new HashMap<String, String>();
-			dataDictionary.put("@@echoMessageA@@", URLEncoder.encode("Ciao Mondo!", "UTF-8"));
-			dataDictionary.put("@@echoMessageB@@", URLEncoder.encode("Salut Monde!", "UTF-8"));
+			dataDictionary.put("@@echoMessageA@@", "Ciao Mondo!");
+			dataDictionary.put("@@echoMessageB@@", "Salut Monde!");
 			System.out.println("Invoking a RapidDeploy deployment of the previous package...");
 			final String output = RapidDeployConnector.invokeRapidDeployDeploymentPollOutput(RD_AUTH_TOKEN, RD_URL, RD_PROJECT, RD_TARGET, RD_PACK_NAME, true, false, dataDictionary);
 			assertTrue("ERROR during the deployment!", output.contains("Completed RapidDeploy Deployment Request"));
