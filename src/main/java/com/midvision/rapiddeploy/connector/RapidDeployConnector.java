@@ -12,13 +12,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -29,6 +33,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class RapidDeployConnector {
+
+	private static final Log logger = LogFactory.getLog(RapidDeployConnector.class);
 
 	/**
 	 * Runs a Job in RapidDeploy with basic information.
@@ -92,8 +98,7 @@ public class RapidDeployConnector {
 	}
 
 	/**
-	 * Runs a Job in RapidDeploy providing the option to run it asynchronously
-	 * and a list of data dictionary items.
+	 * Runs a Job in RapidDeploy providing the option to run it asynchronously and a list of data dictionary items.
 	 * 
 	 * @param authenticationToken
 	 * @param serverUrl
@@ -107,15 +112,14 @@ public class RapidDeployConnector {
 	 * @throws Exception
 	 */
 	public static String invokeRapidDeployDeploymentPollOutput(final String authenticationToken, final String serverUrl, final String projectName,
-			final String targetEnvironment, final String packageName, final boolean logEnabled, final boolean asynchronousJob, final Map<String, String> dataDictionary) 
-					throws Exception {
+			final String targetEnvironment, final String packageName, final boolean logEnabled, final boolean asynchronousJob,
+			final Map<String, String> dataDictionary) throws Exception {
 		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, null, null, null,
 				null, null, asynchronousJob, false, dataDictionary);
 	}
 
 	/**
-	 * Runs a Job in RapidDeploy providing the options to run it asynchronously
-	 * and selecting if running or not previously failed packages.
+	 * Runs a Job in RapidDeploy providing the options to run it asynchronously and selecting if running or not previously failed packages.
 	 *
 	 * @param authenticationToken
 	 * @param serverUrl
@@ -136,8 +140,7 @@ public class RapidDeployConnector {
 	}
 
 	/**
-	 * Runs a Job in RapidDeploy with specific transport credentials and
-	 * providing the option to run it asynchronously as well.
+	 * Runs a Job in RapidDeploy with specific transport credentials and providing the option to run it asynchronously as well.
 	 *
 	 * @param authenticationToken
 	 * @param serverUrl
@@ -160,10 +163,9 @@ public class RapidDeployConnector {
 		return invokeRapidDeployDeploymentPollOutput(authenticationToken, serverUrl, projectName, targetEnvironment, packageName, logEnabled, userName,
 				passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, asynchronousJob, false);
 	}
-	
+
 	/**
-	 * Runs a Job in RapidDeploy with all possible options except the data
-	 * dictionary list.
+	 * Runs a Job in RapidDeploy with all possible options except the data dictionary list.
 	 * 
 	 * @param authenticationToken
 	 * @param serverUrl
@@ -223,7 +225,7 @@ public class RapidDeployConnector {
 			output = invokeRapidDeployDeployment(authenticationToken, serverUrl, projectName, envObjects[0], envObjects[1], null, envObjects[2], packageName,
 					userName, passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, allowFailedPkg, dataDictionary);
 		} else {
-			throw new RuntimeException("Invalid environment settings found! Environment: " + targetEnvironment);
+			throw new RuntimeException("Invalid target environment found! Target: " + targetEnvironment);
 		}
 
 		final StringBuilder response = new StringBuilder();
@@ -236,14 +238,14 @@ public class RapidDeployConnector {
 		return logEnabled ? response.toString() : output;
 	}
 
-	public static String invokeRapidDeployJobPlanPollOutput(final String authenticationToken, final String serverUrl, final String jobPlanId, final boolean asynchronousJob)
-	throws Exception {
+	public static String invokeRapidDeployJobPlanPollOutput(final String authenticationToken, final String serverUrl, final String jobPlanId,
+			final boolean asynchronousJob) throws Exception {
 		String output;
 		output = invokeRapiDeployJobPlan(authenticationToken, serverUrl, jobPlanId);
 		final StringBuilder response = new StringBuilder();
 		response.append("RapidDeploy jobPlan successfully started");
 		response.append(System.getProperty("line.separator"));
-		if(!asynchronousJob){
+		if (!asynchronousJob) {
 			checkJobStatus(authenticationToken, serverUrl, output, response);
 		}
 		return output;
@@ -339,7 +341,7 @@ public class RapidDeployConnector {
 	private static String invokeRapidDeployDeployment(final String authenticationToken, final String serverUrl, final String projectName, final String server,
 			final String environment, final String instance, final String application, final String packageName, final String userName,
 			final String passwordEncrypted, final String keyFilePath, final String keyPassPhraseEncrypted, final String encryptionKey,
-			final boolean allowFailedPkg, Map<String, String> dataDictionary) throws Exception {
+			final boolean allowFailedPkg, final Map<String, String> dataDictionary) throws Exception {
 		final String deploymentUrl = buildDeploymentUrl(serverUrl, projectName, server, environment, instance, application, packageName, userName,
 				passwordEncrypted, keyFilePath, keyPassPhraseEncrypted, encryptionKey, String.valueOf(allowFailedPkg), dataDictionary);
 		return callRDServerPutReq(deploymentUrl, authenticationToken);
@@ -386,7 +388,7 @@ public class RapidDeployConnector {
 		return url.toString();
 	}
 
-	private static String buildRunJobPlanUrl(String serverUrl, final String jobPlanId){
+	private static String buildRunJobPlanUrl(String serverUrl, final String jobPlanId) {
 		if (serverUrl != null && serverUrl.endsWith("/")) {
 			serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
 		}
@@ -402,7 +404,8 @@ public class RapidDeployConnector {
 
 	private static String buildDeploymentUrl(String serverUrl, final String projectName, final String server, final String environment, final String instance,
 			final String application, final String packageName, final String userName, final String passwordEncrypted, final String keyFilePath,
-			final String keyPassPhraseEncrypted, final String encryptionKey, final String allowFailedPkg, Map<String, String> dataDictionary) throws UnsupportedEncodingException {
+			final String keyPassPhraseEncrypted, final String encryptionKey, final String allowFailedPkg, final Map<String, String> dataDictionary)
+			throws UnsupportedEncodingException {
 		if (serverUrl != null && serverUrl.endsWith("/")) {
 			serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
 		}
@@ -435,9 +438,9 @@ public class RapidDeployConnector {
 			}
 		}
 		url.append("&allowFailedPkg=").append(allowFailedPkg);
-		for (Entry<String, String> dataItem : dataDictionary.entrySet()) {
-			url.append("&dictionaryItem=").append(URLEncoder.encode(dataItem.getKey(), "UTF-8"))
-					.append(URLEncoder.encode("=", "UTF-8")).append(URLEncoder.encode(dataItem.getValue(), "UTF-8"));
+		for (final Entry<String, String> dataItem : dataDictionary.entrySet()) {
+			url.append("&dictionaryItem=").append(URLEncoder.encode(dataItem.getKey(), "UTF-8")).append(URLEncoder.encode("=", "UTF-8"))
+					.append(URLEncoder.encode(dataItem.getValue(), "UTF-8"));
 		}
 		return url.toString();
 	}
@@ -476,13 +479,14 @@ public class RapidDeployConnector {
 	}
 
 	private static String getInputstreamContent(final InputStream inputstream) throws java.io.IOException {
-		StringBuilder inputStringBuilder = new StringBuilder();
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputstream, "UTF-8"));
-        String line = bufferedReader.readLine();
-        while(line != null){
-            inputStringBuilder.append(line);inputStringBuilder.append('\n');
-            line = bufferedReader.readLine();
-        }
+		final StringBuilder inputStringBuilder = new StringBuilder();
+		final BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputstream, "UTF-8"));
+		String line = bufferedReader.readLine();
+		while (line != null) {
+			inputStringBuilder.append(line);
+			inputStringBuilder.append('\n');
+			line = bufferedReader.readLine();
+		}
 		return inputStringBuilder.toString();
 	}
 
@@ -541,12 +545,12 @@ public class RapidDeployConnector {
 	}
 
 	public static Map<String, String> extractJobPlansFromXml(final String xmlContent) throws Exception {
-		final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		final DocumentBuilder builder = getSecureDocumentBuilderFactory().newDocumentBuilder();
 		final Document document = builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(xmlContent)));
 		final org.w3c.dom.Element rootElement = document.getDocumentElement();
 
 		final NodeList list = rootElement.getElementsByTagName("JobPlan");
-		Map<String, String> result = new HashMap<String, String>();
+		final Map<String, String> result = new HashMap<String, String>();
 		if ((list != null) && (list.getLength() > 0)) {
 			for (int i = 0; i < list.getLength(); i++) {
 				final NodeList subList = list.item(i).getChildNodes();
@@ -554,28 +558,28 @@ public class RapidDeployConnector {
 					String id = null;
 					String name = null;
 					String securityName = "all";
-					for(int j = 0; j < subList.getLength(); j++){
-						Node node = subList.item(j);
-						if(node.getChildNodes() == null){
+					for (int j = 0; j < subList.getLength(); j++) {
+						final Node node = subList.item(j);
+						if (node.getChildNodes() == null) {
 							continue;
 						}
-						if(node.getNodeName().equals("id")){
-							for(int k = 0; k < node.getChildNodes().getLength(); k++){
+						if (node.getNodeName().equals("id")) {
+							for (int k = 0; k < node.getChildNodes().getLength(); k++) {
 								id = node.getChildNodes().item(k).getNodeValue();
 							}
 						}
-						if(node.getNodeName().equals("name")){
-							for(int k = 0; k < node.getChildNodes().getLength(); k++){
+						if (node.getNodeName().equals("name")) {
+							for (int k = 0; k < node.getChildNodes().getLength(); k++) {
 								name = node.getChildNodes().item(k).getNodeValue();
 							}
 						}
-						if(node.getNodeName().equals("securityName")){
-							for(int k = 0; k < node.getChildNodes().getLength(); k++){
+						if (node.getNodeName().equals("securityName")) {
+							for (int k = 0; k < node.getChildNodes().getLength(); k++) {
 								securityName = node.getChildNodes().item(k).getNodeValue();
 							}
 						}
 					}
-					if(id != null){
+					if (id != null) {
 						result.put(id, "[" + id + "] " + name + " (" + securityName + ")");
 					}
 				}
@@ -585,7 +589,7 @@ public class RapidDeployConnector {
 	}
 
 	public static List<String> extractTagValueFromXml(final String xmlContent, final String tagName) throws Exception {
-		final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		final DocumentBuilder builder = getSecureDocumentBuilderFactory().newDocumentBuilder();
 		final Document document = builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(xmlContent)));
 		final org.w3c.dom.Element rootElement = document.getDocumentElement();
 
@@ -607,7 +611,7 @@ public class RapidDeployConnector {
 
 	@SuppressWarnings("unused")
 	private static String extractXPathExpressionFromXml(final String xmlContent, final String xpathExpr) throws Exception {
-		final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		final DocumentBuilder builder = getSecureDocumentBuilderFactory().newDocumentBuilder();
 		final Document document = builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(xmlContent)));
 		final XPathFactory xPathfactory = XPathFactory.newInstance();
 		final XPath xpath = xPathfactory.newXPath();
@@ -616,15 +620,15 @@ public class RapidDeployConnector {
 	}
 
 	private static List<String> extractXPathExpressionListFromXml(final String xmlContent, final String xpathExpr) throws Exception {
-		List<String> resList = new ArrayList<String>();
-		final DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+		final List<String> resList = new ArrayList<String>();
+		final DocumentBuilder builder = getSecureDocumentBuilderFactory().newDocumentBuilder();
 		final Document document = builder.parse(new org.xml.sax.InputSource(new java.io.StringReader(xmlContent)));
 		final XPathFactory xPathfactory = XPathFactory.newInstance();
 		final XPath xpath = xPathfactory.newXPath();
 		final XPathExpression expr = xpath.compile(xpathExpr);
-		NodeList list = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+		final NodeList list = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
 		for (int i = 0; i < list.getLength(); i++) {
-			Node node = list.item(i);
+			final Node node = list.item(i);
 			resList.add(node.getNodeValue());
 		}
 		return resList;
@@ -641,8 +645,8 @@ public class RapidDeployConnector {
 		return jobStatus;
 	}
 
-	public static List<String> extractIncludedJobIdsUnderPipelineJob (final String responseOutput) throws Exception {
-		List<String> includedJobIds = new ArrayList<String>();
+	public static List<String> extractIncludedJobIdsUnderPipelineJob(final String responseOutput) throws Exception {
+		final List<String> includedJobIds = new ArrayList<String>();
 		final List<String> responseData = extractTagValueFromXml(responseOutput, "span");
 		for (int i = 0; i < responseData.size(); i++) {
 			if ((((String) responseData.get(i)).contains("Internal Job ID")) && (responseData.size() >= i + 1)) {
@@ -668,5 +672,52 @@ public class RapidDeployConnector {
 			}
 		}
 		return jobId;
+	}
+
+	/**
+	 * Returns a secured to XXE attacks DocumentBuildFactory.
+	 * 
+	 * https://owasp.org/www-project-cheat-sheets/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html 
+	 */
+	private static DocumentBuilderFactory getSecureDocumentBuilderFactory() throws ParserConfigurationException {
+		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		String feature = null;
+		try {
+			// This is the PRIMARY defense. If DTDs (doctypes) are disallowed, almost all
+			// XML entity attacks are prevented
+			// Xerces 2 only - http://xerces.apache.org/xerces2-j/features.html#disallow-doctype-decl
+			feature = "http://apache.org/xml/features/disallow-doctype-decl";
+			dbf.setFeature(feature, true);
+
+			// If you can't completely disable DTDs, then at least do the following:
+			// Xerces 1 - http://xerces.apache.org/xerces-j/features.html#external-general-entities
+			// Xerces 2 - http://xerces.apache.org/xerces2-j/features.html#external-general-entities
+			// JDK7+ - http://xml.org/sax/features/external-general-entities
+			feature = "http://xml.org/sax/features/external-general-entities";
+			dbf.setFeature(feature, false);
+
+			// Xerces 1 - http://xerces.apache.org/xerces-j/features.html#external-parameter-entities
+			// Xerces 2 - http://xerces.apache.org/xerces2-j/features.html#external-parameter-entities
+			// JDK7+ - http://xml.org/sax/features/external-parameter-entities
+			feature = "http://xml.org/sax/features/external-parameter-entities";
+			dbf.setFeature(feature, false);
+
+			// Disable external DTDs as well
+			feature = "http://apache.org/xml/features/nonvalidating/load-external-dtd";
+			dbf.setFeature(feature, false);
+
+			// and these as well, per Timothy Morgan's 2014 paper: "XML Schema, DTD, and Entity Attacks"
+			dbf.setXIncludeAware(false);
+			dbf.setExpandEntityReferences(false);
+			
+			dbf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+			dbf.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+
+			return dbf;
+		} catch (final ParserConfigurationException e) {
+			// This should catch a failed setFeature feature
+			logger.info("ParserConfigurationException was thrown. The feature '" + feature + "' is probably not supported by your XML processor.");
+			throw e;
+		}
 	}
 }
