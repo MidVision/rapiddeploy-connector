@@ -677,7 +677,7 @@ public class RapidDeployConnector {
 	/**
 	 * Returns a secured to XXE attacks DocumentBuildFactory.
 	 * 
-	 * https://owasp.org/www-project-cheat-sheets/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html 
+	 * https://cheatsheetseries.owasp.org/cheatsheets/XML_External_Entity_Prevention_Cheat_Sheet.html
 	 */
 	private static DocumentBuilderFactory getSecureDocumentBuilderFactory() throws ParserConfigurationException {
 		final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -709,15 +709,19 @@ public class RapidDeployConnector {
 			// and these as well, per Timothy Morgan's 2014 paper: "XML Schema, DTD, and Entity Attacks"
 			dbf.setXIncludeAware(false);
 			dbf.setExpandEntityReferences(false);
-			
-			dbf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-			dbf.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+
+			try {
+				dbf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+				dbf.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+			} catch (final IllegalArgumentException iae) {
+				logger.warn(iae.getMessage());
+			}
 
 			return dbf;
-		} catch (final ParserConfigurationException e) {
+		} catch (final ParserConfigurationException pce) {
 			// This should catch a failed setFeature feature
 			logger.info("ParserConfigurationException was thrown. The feature '" + feature + "' is probably not supported by your XML processor.");
-			throw e;
+			throw pce;
 		}
 	}
 }
