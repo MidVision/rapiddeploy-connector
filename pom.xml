@@ -3,7 +3,7 @@
 
 	<groupId>com.midvision.plugins</groupId>
 	<artifactId>rapiddeploy-connector</artifactId>
-	<version>1.12-SNAPSHOT</version>
+	<version>1.12</version>
 	<packaging>jar</packaging>
 
 	<name>RapidDeploy API for external plugins.</name>
@@ -78,7 +78,7 @@
 		<connection>scm:git:https://github.com/MidVision/rapiddeploy-connector.git</connection>
 		<developerConnection>scm:git:https://github.com/MidVision/rapiddeploy-connector.git</developerConnection>
 		<url>https://github.com/MidVision/rapiddeploy-connector</url>
-		<tag>HEAD</tag>
+		<tag>rapiddeploy-connector-1.12</tag>
 	</scm>
 
 	<distributionManagement>
