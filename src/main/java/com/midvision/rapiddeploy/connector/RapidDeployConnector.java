@@ -325,7 +325,7 @@ public class RapidDeployConnector {
 		final List<String> packageNames = extractTagValueFromXml(output, "span");
 		final List<String> packages = new ArrayList<String>();
 		for (final String pack : packageNames) {
-			if (!"null".equals(pack) && !pack.startsWith("Deployment")) {
+			if (!"null".equals(pack) && !pack.contains("Package name for project")) {
 				packages.add(pack);
 			}
 		}
