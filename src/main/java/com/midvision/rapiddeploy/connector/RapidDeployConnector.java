@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.net.ssl.SSLContext;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -27,7 +28,11 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPut;
-import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.ssl.SSLContexts;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -365,7 +370,7 @@ public class RapidDeployConnector {
 			serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
 		}
 		final StringBuilder url = new StringBuilder();
-		if (!serverUrl.startsWith("http://")) {
+		if (!serverUrl.startsWith("http://") && !serverUrl.startsWith("https://")) {
 			url.append("http://");
 		}
 		url.append(serverUrl).append(context);
@@ -377,7 +382,7 @@ public class RapidDeployConnector {
 			serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
 		}
 		final StringBuilder url = new StringBuilder();
-		if (!serverUrl.startsWith("http://")) {
+		if (!serverUrl.startsWith("http://") && !serverUrl.startsWith("https://")) {
 			url.append("http://");
 		}
 		url.append(serverUrl).append("/ws/deployment/");
@@ -393,7 +398,7 @@ public class RapidDeployConnector {
 			serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
 		}
 		final StringBuilder url = new StringBuilder();
-		if (!serverUrl.startsWith("http://")) {
+		if (!serverUrl.startsWith("http://") && !serverUrl.startsWith("https://")) {
 			url.append("http://");
 		}
 		url.append(serverUrl).append("/ws/deployment/");
@@ -410,7 +415,7 @@ public class RapidDeployConnector {
 			serverUrl = serverUrl.substring(0, serverUrl.length() - 1);
 		}
 		final StringBuilder url = new StringBuilder();
-		if (!serverUrl.startsWith("http://")) {
+		if (!serverUrl.startsWith("http://") && !serverUrl.startsWith("https://")) {
 			url.append("http://");
 		}
 		url.append(serverUrl).append("/ws/deployment/");
@@ -448,7 +453,9 @@ public class RapidDeployConnector {
 	/** WEB SERVICE CALL METHODS **/
 
 	private static String callRDServerPutReq(final String url, final String authenticationToken) throws Exception {
-		final HttpClient httpClient = HttpClientBuilder.create().build();
+		final SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).build();
+		final SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+		final HttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslSocketFactory).build();
 		final HttpPut putRequest = new HttpPut(url);
 		putRequest.addHeader("Authorization", authenticationToken);
 		final HttpResponse response = httpClient.execute(putRequest);
@@ -464,7 +471,9 @@ public class RapidDeployConnector {
 	}
 
 	private static String callRDServerGetReq(final String url, final String authenticationToken) throws Exception {
-		final HttpClient httpClient = HttpClientBuilder.create().build();
+		final SSLContext sslContext = SSLContexts.custom().loadTrustMaterial(null, new TrustSelfSignedStrategy()).build();
+		final SSLConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(sslContext, NoopHostnameVerifier.INSTANCE);
+		final HttpClient httpClient = HttpClients.custom().setSSLSocketFactory(sslSocketFactory).build();
 		final HttpGet getRequest = new HttpGet(url);
 		getRequest.addHeader("Authorization", authenticationToken);
 		final HttpResponse response = httpClient.execute(getRequest);

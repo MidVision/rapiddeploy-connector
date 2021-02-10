@@ -68,7 +68,7 @@
 				<artifactId>maven-deploy-plugin</artifactId>
 				<version>${maven-deploy-plugin.version}</version>
 				<configuration>
-					<skip>false</skip>
+					<skip>true</skip>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -85,12 +85,12 @@
 		<repository>
 			<id>midvision.release.repo</id>
 			<name>MidVision Release Repository</name>
-			<url>http://www.download.midvision.com/content/repositories/midvision-external-plugins/</url>
+			<url>https://download.midvision.com/content/repositories/Community_release</url>
 		</repository>
 		<snapshotRepository>
 			<id>midvision.snapshot.repo</id>
 			<name>MidVision Snapshot Repository</name>
-			<url>http://www.download.midvision.com/content/repositories/midvision-external-plugins/</url>
+			<url>https://download.midvision.com/content/repositories/Community_release</url>
 		</snapshotRepository>
 	</distributionManagement>
 </project>
