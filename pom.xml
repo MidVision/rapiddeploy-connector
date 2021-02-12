@@ -85,12 +85,12 @@
 		<repository>
 			<id>midvision.release.repo</id>
 			<name>MidVision Release Repository</name>
-			<url>https://download.midvision.com/content/repositories/Community_release</url>
+			<url>https://plugins.midvision.com/downloads/releases</url>
 		</repository>
 		<snapshotRepository>
 			<id>midvision.snapshot.repo</id>
 			<name>MidVision Snapshot Repository</name>
-			<url>https://download.midvision.com/content/repositories/Community_release</url>
+			<url>https://plugins.midvision.com/downloads/releases</url>
 		</snapshotRepository>
 	</distributionManagement>
 </project>
