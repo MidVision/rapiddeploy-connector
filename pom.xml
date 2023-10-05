@@ -6,25 +6,27 @@
 	<version>1.14-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>RapidDeploy API for external plugins.</name>
-	<url>http://www.midvision.com</url>
+	<name>RapidDeploy API for external plugins</name>
+	<url>https://www.midvision.com</url>
 
 	<organization>
 		<name>MidVision</name>
-		<url>http://www.midvision.com/</url>
+		<url>https://www.midvision.com</url>
 	</organization>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven-deploy-plugin.version>2.7</maven-deploy-plugin.version>
 		<maven-assembly-plugin.version>2.4</maven-assembly-plugin.version>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.5.11</version>
+			<version>4.5.14</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
