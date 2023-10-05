@@ -18,7 +18,7 @@ And the public repository where it can be found:
 ```xml
 <repository>
 	<id>MidVision</id>
-	<url>http://www.download.midvision.com/content/repositories/Community_release/</url>
+	<url>https://plugins.midvision.com/downloads/releases</url>
 </repository>
 ```
 
